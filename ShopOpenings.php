@@ -48,13 +48,69 @@ class ShopOpenings
 
     /**
      * @param array $config
+     * @throws InvalidArgumentException
      */
     private function validateConfig(array $config)
     {
         if (7 !== count($config)) {
-            throw new InvalidArgumentException(sprintf('You must configure 7 days (%s given)', count($config)));
+            throw new InvalidArgumentException(sprintf(
+                'You must configure 7 days (%s given)',
+                count($config)
+            ));
         }
 
-        // todo: validate the openings
+        foreach ($config as $dayOfWeek) {
+            $this->validateDayOfWeekConfig($dayOfWeek);
+        }
+    }
+
+    /**
+     * @param array $dayOfWeek
+     * @throws InvalidArgumentException
+     */
+    private function validateDayOfWeekConfig($dayOfWeek)
+    {
+        if (!is_array($dayOfWeek)) {
+            throw new InvalidArgumentException(sprintf(
+                'Each a day must be an array (%s given)',
+                gettype($dayOfWeek)
+            ));
+        }
+
+        foreach ($dayOfWeek as $opening) {
+            $this->validateOpeningConfig($opening);
+        }
+    }
+
+    /**
+     * @param array $opening
+     * @throws InvalidArgumentException
+     */
+    private function validateOpeningConfig($opening)
+    {
+        if (!is_array($opening)) {
+            throw new InvalidArgumentException(sprintf(
+                'Each opening of a day must be an array (%s given)',
+                gettype($opening)
+            ));
+        }
+
+        if (2 !== count($opening)) {
+            throw new InvalidArgumentException(
+                'Each opening for a day must contain two values representing hours range'
+            );
+        }
+
+        if (!is_int($opening[0]) || !is_int($opening[1])) {
+            throw new InvalidArgumentException('Hour(s) must be an integer');
+        }
+
+        if ($opening[0] < 0 || $opening[1] > 24) {
+            throw new InvalidArgumentException('Hour must be an integer within 0 and 24');
+        }
+
+        if ($opening[0] >= $opening[1]) {
+            throw new InvalidArgumentException('Invalid hour(s): must be closed after opening');
+        }
     }
 }

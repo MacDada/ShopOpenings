@@ -5,11 +5,11 @@ namespace MacDada;
 class ShopOpeningsTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      */
     public function testConfigNeedsToHave7DaysDefined()
     {
-        // 6 days configured
+        // 6 days configured (7 are required)
         new ShopOpenings([
             [],
             [],
@@ -18,6 +18,48 @@ class ShopOpeningsTest extends \PHPUnit_Framework_TestCase
             [],
             [],
         ]);
+    }
+
+    /**
+     * @dataProvider provideInvalidDayConfigs
+     * @expectedException \InvalidArgumentException
+     */
+    public function testOpeningMustHaveAHoursRangeDefined($invalidDayConfig)
+    {
+        new ShopOpenings([
+            [],
+            [],
+            [],
+            $invalidDayConfig,
+            [],
+            [],
+            [],
+        ]);
+    }
+
+    public function provideInvalidDayConfigs()
+    {
+        return [
+            ['', 'day is string while array should be expected'],
+            [[''], 'opening is string while array should be expected'],
+            [[[]], 'opening is empty array while hours range should be expected'],
+            [[[17]], 'opening contains only one hour while a range should be expected'],
+            [[[17, 18, 19]], 'opening contains too many hours while a range should be expected'],
+
+            [[[-1, 17]], 'single opening: invalid hour'],
+            [[[7, 25]], 'single opening: invalid hour'],
+            [[[18, 17]], 'single opening: closing before opening'],
+            [[[12, 12]], 'single opening: opening and closing at the same time'],
+            [[['', 12]], 'single opening: not numeric hour'],
+            [[[12, '']], 'single opening: not numeric hour'],
+
+            [[[12, 14], [-1, 17]], 'multiple openings: invalid hour'],
+            [[[12, 14], [7, 25]], 'multiple openings: invalid hour'],
+            [[[12, 14], [18, 17]], 'multiple openings: closing before opening'],
+            [[[12, 14], [12, 12]], 'multiple openings: opening and closing at the same time'],
+            [[[12, 14], ['', 12]], 'multiple openings: not numeric hour'],
+            [[[12, 14], [12, '']], 'multiple openings: not numeric hour'],
+        ];
     }
 
     /**
