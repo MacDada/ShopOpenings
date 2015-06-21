@@ -2,6 +2,7 @@
 
 namespace MacDada;
 
+use DateTime;
 use InvalidArgumentException;
 
 class ShopOpenings
@@ -30,7 +31,10 @@ class ShopOpenings
     public function getForDayOfWeek($dayOfWeek)
     {
         if ($dayOfWeek < 1 || $dayOfWeek > 7) {
-            throw new InvalidArgumentException();
+            throw new InvalidArgumentException(sprintf(
+                '$dayOfWeek must be within 1-7 (%s given)',
+                $dayOfWeek
+            ));
         }
 
         return $this->config[$dayOfWeek - 1];
@@ -44,6 +48,37 @@ class ShopOpenings
     public function isOpenOnDayOfWeek($dayOfWeek)
     {
         return 0 !== count($this->getForDayOfWeek($dayOfWeek));
+    }
+
+    /**
+     * @param DateTime $dateTime
+     * @return bool
+     */
+    public function isOpenOn(DateTime $dateTime)
+    {
+        $dayOfWeek = $this->getHumanDayOfWeekStartingMonday($dateTime);
+
+        foreach ($this->getForDayOfWeek($dayOfWeek) as $opening) {
+            $openingStart = clone $dateTime;
+            $openingStart->setTime($opening[0], 0);
+            $openingEnd = clone $dateTime;
+            $openingEnd->setTime($opening[1], 0);
+
+            if ($dateTime >= $openingStart && $dateTime <= $openingEnd) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param DateTime $dateTime
+     * @return int
+     */
+    private function getHumanDayOfWeekStartingMonday(DateTime $dateTime)
+    {
+        return 0 == $dateTime->format('w') ? 7 : (int) $dateTime->format('w');
     }
 
     /**

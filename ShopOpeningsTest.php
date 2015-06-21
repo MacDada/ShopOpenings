@@ -2,6 +2,8 @@
 
 namespace MacDada;
 
+use DateTime;
+
 class ShopOpeningsTest extends \PHPUnit_Framework_TestCase
 {
     /**
@@ -168,6 +170,65 @@ class ShopOpeningsTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($openings->isOpenOnDayOfWeek(5));
         $this->assertFalse($openings->isOpenOnDayOfWeek(6));
         $this->assertFalse($openings->isOpenOnDayOfWeek(7));
+    }
+
+    /**
+     * @dataProvider provideForIsOpenOn
+     */
+    public function testIsOpenOn($dateTimeString, $isOpen)
+    {
+        $openings = new ShopOpenings([
+            [],
+            [[8, 16]],
+            [[10, 18]],
+            [[12, 14], [17, 21]],
+            [],
+            [],
+            [[13, 15]],
+        ]);
+
+        $this->assertSame($isOpen, $openings->isOpenOn(new DateTime($dateTimeString)));
+    }
+
+    public function provideForIsOpenOn()
+    {
+        return [
+            ['15-06-2015 17:00', false, 'monday - no openings defined'],
+            ['19-06-2015 17:00', false, 'friday - no openings defined'],
+            ['20-06-2015 17:00', false, 'saturday - no openings defined'],
+
+            ['16-06-2015 07:59', false, 'tuesday - before opening'],
+            ['17-06-2015 09:59', false, 'wednesday - before opening'],
+            ['18-06-2015 09:59', false, 'thursday - before opening'],
+            ['21-06-2015 12:59', false, 'sunday - before opening'],
+
+            ['16-06-2015 16:01', false, 'tuesday - after opening'],
+            ['17-06-2015 18:01', false, 'wednesday - after opening'],
+            ['18-06-2015 21:01', false, 'thursday - after opening'],
+            ['21-06-2015 15:01', false, 'sunday - after opening'],
+
+            ['18-06-2015 14:01', false, 'thursday - between openings'],
+            ['18-06-2015 16:59', false, 'thursday - between openings'],
+
+            ['16-06-2015 08:00', true, 'tuesday'],
+            ['16-06-2015 13:00', true, 'tuesday'],
+            ['16-06-2015 16:00', true, 'tuesday'],
+
+            ['17-06-2015 10:00', true, 'wednesday'],
+            ['17-06-2015 14:00', true, 'wednesday'],
+            ['17-06-2015 18:00', true, 'wednesday'],
+
+            ['17-06-2015 10:00', true, 'wednesday'],
+            ['17-06-2015 14:00', true, 'wednesday'],
+            ['17-06-2015 18:00', true, 'wednesday'],
+
+            ['18-06-2015 12:00', true, 'thursday first opening'],
+            ['18-06-2015 13:00', true, 'thursday first opening'],
+            ['18-06-2015 14:00', true, 'thursday first opening'],
+            ['18-06-2015 17:00', true, 'thursday second opening'],
+            ['18-06-2015 20:00', true, 'thursday second opening'],
+            ['18-06-2015 21:00', true, 'thursday second opening'],
+        ];
     }
 
     public function provideInvalidDaysOfWeek()
