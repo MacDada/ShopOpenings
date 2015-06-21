@@ -48,7 +48,7 @@ class ShopOpeningsTest extends \PHPUnit_Framework_TestCase
 
             [[[-1, 17]], 'single opening: invalid hour'],
             [[[7, 25]], 'single opening: invalid hour'],
-            [[[18, 17]], 'single opening: closing before opening'],
+            [[[20, 10]], 'single opening: closing before opening'],
             [[[12, 12]], 'single opening: opening and closing at the same time'],
             [[['', 12]], 'single opening: not numeric hour'],
             [[[12, '']], 'single opening: not numeric hour'],
@@ -59,6 +59,10 @@ class ShopOpeningsTest extends \PHPUnit_Framework_TestCase
             [[[12, 14], [12, 12]], 'multiple openings: opening and closing at the same time'],
             [[[12, 14], ['', 12]], 'multiple openings: not numeric hour'],
             [[[12, 14], [12, '']], 'multiple openings: not numeric hour'],
+
+            [[[8, 14], [14, 16]], 'first opening closing when second is starting'],
+            [[[8, 14], [12, 16]], 'first opening closing after second is starting'],
+            [[[14, 16], [8, 12]], 'first opening after second opening'],
         ];
     }
 
@@ -110,7 +114,7 @@ class ShopOpeningsTest extends \PHPUnit_Framework_TestCase
             [],
             [[8, 16]],
             [[10, 18]],
-            [[12, 14], [14, 16]], // two openings with a break between
+            [[12, 14], [15, 16]], // two openings with a break between
             [],
             [],
             [],
@@ -119,7 +123,7 @@ class ShopOpeningsTest extends \PHPUnit_Framework_TestCase
         $this->assertSame([], $openings->getForDayOfWeek(1));
         $this->assertSame([[8, 16]], $openings->getForDayOfWeek(2));
         $this->assertSame([[10, 18]], $openings->getForDayOfWeek(3));
-        $this->assertSame([[12, 14], [14, 16]], $openings->getForDayOfWeek(4));
+        $this->assertSame([[12, 14], [15, 16]], $openings->getForDayOfWeek(4));
         $this->assertSame([], $openings->getForDayOfWeek(5));
         $this->assertSame([], $openings->getForDayOfWeek(5));
         $this->assertSame([], $openings->getForDayOfWeek(6));
@@ -151,7 +155,7 @@ class ShopOpeningsTest extends \PHPUnit_Framework_TestCase
             [],
             [[8, 16]],
             [[10, 18]],
-            [[12, 14], [14, 16]], // two openings with a break between
+            [[12, 14], [17, 21]], // two openings with a break between
             [],
             [],
             [],

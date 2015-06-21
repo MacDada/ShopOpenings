@@ -77,8 +77,16 @@ class ShopOpenings
             ));
         }
 
-        foreach ($dayOfWeek as $opening) {
-            $this->validateOpeningConfig($opening);
+        $openingsCount = count($dayOfWeek);
+
+        for ($i = 0; $i < $openingsCount; $i++) {
+            $this->validateOpeningConfig($dayOfWeek[$i]);
+
+            if (0 !== $i && $dayOfWeek[$i - 1][1] >= $dayOfWeek[$i][0]) {
+                throw new InvalidArgumentException(
+                    'When multiple openings, each must start after the one before ends'
+                );
+            }
         }
     }
 
